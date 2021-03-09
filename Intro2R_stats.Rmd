@@ -1,0 +1,123 @@
+---
+title: "Introduction to R part 2"
+output:
+  word_document: default
+  html_document: default
+---
+## Learning objectives
+* Data wrangling
+* Basic plotting and statistics
+```{r}
+library(knitr)
+getwd()
+```
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+
+##Open a data file and look at the data
+Download Gene_expreesion_matrix.txt from Moodle
+
+This is a real RNA-Seq counts data file. Where we took gene expression from 2 human fibroblasts, and then did a serum challenge that can mimic wound healing and gene expression patterns seen in some cancers. h1 and h2 are the biological replicates (different individuals) and P is Pre-challenge, and T12 is 12 hours after the challenge.
+
+There are many options to open files in R, but R studio makes it easy through the regular open function. To add the data matrix to the environment, go to the right top panel and import dataset from base. 
+IMPORTANT, click yes in the heading row. This will give the columns the correct names.
+
+Did it work? UNIX commands also work in R. Here use head() to look at the top of the data
+
+```{r}
+Gene_expression_matrix<-read.table("Gene_expression_matrix.txt", header=T, sep="\t")
+head(Gene_expression_matrix)
+```
+One of the most important things we need to do when looking at large datasets it to look at and understand the underlying distribution. Here we use the histogram tool to do that, hist(). We'll only plot one of the columns at a time today.
+
+###Analyizing parts of a larger dataset
+A really important shorthand in R is the $. The dollar sign $ lets you grab one element of a matrix (or other object). Here, if we want to plot the first data column we can use the matrix\$column_name, here Gene_expression_matrix$h1_P.
+
+```{r}
+hist(Gene_expression_matrix$h1_P)
+```
+Not super informative. is it? How can we see more about the data? Let's break it up more.
+
+```{r}
+hist(Gene_expression_matrix$h1_P, breaks=100, col="blue")
+```
+still not much there. There seems to be a lot in the left blue bar, but the x-axis keeps going, indicating that there are data points that far off. We need to look at a summary of our data.
+
+What is the distribution of the count numbers? With Big Data and Genomics, sometimes the best way to start to understand the data is with summary statistics (seemingly boring things like the max, min, mean....)
+
+```{r}
+summary(Gene_expression_matrix)
+```
+
+##Subset the data
+So, we have a lot of low expression values that we might be less confident of since we only have two replicates. One next step to to look at the data again after removing these counts. Subset is a powerful function to subset data to analyze separately and better understand how changing the underlying distribution changes downstream analyses. We can use logical operators <, > & (and), | (or), == (equals), or != (does not equal) to ask for the data under a subset of conditions. Here all column counts need to be greater than or equal to 10. Make sure you can find where we specify that in the code before running this section.
+
+```{r}
+data_new<- subset(Gene_expression_matrix, Gene_expression_matrix$h1_P >= 10 & Gene_expression_matrix$h2_P >= 10 & Gene_expression_matrix$h1_T12 >= 10 & Gene_expression_matrix$h2_T12 >= 10)
+
+summary(data_new)
+```
+
+##Questions: 
+1. Subset the data to exclude really large counts. Use the information from summary (and the x-axis of your graph) to get an idea of what that threshold might be. 1000? 10,000?
+
+```{r}
+data_new2<- subset(Gene_expression_matrix, Gene_expression_matrix$h1_P <= 100000 & Gene_expression_matrix$h2_P <= 100000 & Gene_expression_matrix$h1_T12 <= 100000 & Gene_expression_matrix$h2_T12 <= 100000)
+
+summary(data_new2)
+```
+
+a)  What did the subsetting in data_new do to the data matrix (e.g.  total gene count, min, max, and mean)?
+
+Subsetting reduced the total gene count. Min, max and mean all decreased as there is now a constraint of 100,000 on each count.
+
+b) Edit the subset code above and use summary and hist to describe and plot your new subsetted data matrix. Be sure to add axis labels and a title (and color).
+
+```{r}
+data_new3 <- subset(Gene_expression_matrix, Gene_expression_matrix$h1_P <= 1000 & Gene_expression_matrix$h2_P <= 1000 & Gene_expression_matrix$h1_T12 <= 1000 & Gene_expression_matrix$h2_T12 <= 1000)
+
+summary(data_new3)
+hist(data_new3$h1_P, data_new3$h2_P, breaks=100, main = "Frequency of Gene Expression of Fibroblasts ",  xlab = "Biological Replicates H1/H2 Pre-Challenge",ylab = "Frequency", col="orange")
+```
+## Distributions and Statistics
+
+One of the challenges with real biological data is that it is not alway normal. Many statistical test default assume that there is a normal distribution. 
+
+Here's some generated normal data 
+```{r}
+y <- rnorm(1000)
+hist(y)
+```
+2. Let us plot the normal data against our subseted data. If they have the same distribution, we will see a straight line. For normally distributed data, we use parametric statistics. 
+a) use the command qqplot to plot (#your data column, y). Plot it here.
+
+```{r}
+data_new3 <- subset(Gene_expression_matrix, Gene_expression_matrix$h1_P <= 1000 & Gene_expression_matrix$h2_P <= 1000 & Gene_expression_matrix$h1_T12 <= 1000 & Gene_expression_matrix$h2_T12 <= 1000)
+y <- rnorm(1000)
+
+data_new_norm <- rnorm(data_new3)
+hist(data_new_norm)
+head(data_new_norm)
+
+#data_new_norm#H1_P throws error
+qqplot(data_new_norm, y)
+```
+
+3. So, if the data is not normally distributed we need to use non-parametric statistics. Sometimes this only has a slight difference, sometimes more. Let's look at the differences in correlations using cor.test
+a) perform cor.test between sample h2 at the P and T12 timepoints
+```{r}
+cor.test(data_new3$h2_P, data_new3$h2_T12)
+```
+
+
+b) perform a non-parametric cor.test between the same two columns, using cor.test("a", "b", method="spearman")
+```{r}
+cor.test(data_new3$h2_P,  data_new3$h2_T12, method="spearman")
+```
+
+
+
+

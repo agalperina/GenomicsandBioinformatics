@@ -1,0 +1,120 @@
+---
+title: "Intro"
+author: "Anastasia Galperina"
+date: "2/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(RColorBrewer)
+library(ggplot2)
+```
+
+
+```{r}
+y <- as.data.frame(matrix(runif(30), ncol=3, dimnames=list(letters[1:10], LETTERS[1:3]))) 
+head(y)  
+```
+```{r}
+plot(y[,1], y[,2]) 
+```
+```{r}
+plot(y[,1], y[,2], type="n", main="Plot of Labels"); 
+text(y[,1], y[,2], rownames(y)) 
+```
+```{r}
+plot(y[,1], y[,2]); 
+myline <- lm(y[,2]~y[,1], data=y[,1:2]); 
+abline(myline, lwd=2) 
+summary(myline) 
+```
+
+```{r}
+plot(y[,1], type="l", lwd=2, col="blue") 
+```
+# What is a density plot
+
+```{r}
+plot(density(rnorm(10)), xlim=c(-2,2), ylim=c(0,1), col="red"); par(new=TRUE)
+```
+```{r}
+# Several density plots can be overlayed. In ths example two density plots are plotted at the same scale, and depend on the par command above.
+plot(density(rnorm(10)), xlim=c(-2,2), ylim=c(0,1), col="green")
+```
+
+```{r}
+# Generates a sample data set.
+y <- as.data.frame(matrix(runif(300), ncol=10, dimnames=list(1:30, LETTERS[1:10]))) 
+```
+
+```{r}
+# Creates a box plot. A box plot (also known as a box-and-whisker diagram) is a graphical representation of a five-number summary, which consists of the smallest
+# observation, lower quartile, median, upper quartile and largest observation
+boxplot(y, col=1:length(y))
+```
+
+```{r}
+display.brewer.pal(n = 8, name = 'RdBu')
+```
+
+```{r}
+barplot(c(2,5,7), col=brewer.pal(n = 3, name = "RdBu"))
+```
+
+```{r}
+data=as.matrix(mtcars)
+head(data)
+```
+
+```{r}
+heatmap(data)
+```
+
+```{r}
+heatmap(data, scale="column")
+```
+
+```{r}
+coul = colorRampPalette(brewer.pal(8, "PiYG"))(25)
+heatmap(data, scale="column", col = coul)
+```
+
+```{r}
+d<-read.table("Gene_expression_matrix.txt",header=T,sep="\t")
+dsm<-subset(d, d$h1_P > 10 & d$h1_P <1000)
+forHeatmap<-dsm[,2:5] #get rid of the gene names
+forHeatmap<-as.matrix(forHeatmap) 
+heatmap(forHeatmap)
+```
+
+# Excersices
+
+Create 2 new vectors of 10 numbers. Plot both vectors on the same density plot.
+```{r}
+vector1 <- c(1,2,3,4,5,6,7,8,9,10)
+vector2 <- c(2,4,6,8,3,5,7,9,0,1)
+
+plot(density(vector1, vector2))
+```
+Make a barplot (you can make the vector) using three different color pallets, one sequential, divergent, and qualitative. 
+```{r}
+barplot(vector1, col=brewer.pal(n = 10, name = "BuPu"))
+barplot(vector1, col=brewer.pal(n = 10, name = "Accent"))
+barplot(vector1, col=brewer.pal(n = 10, name = "BrBG"))
+```
+# adding colors to heatmap()
+```{r}
+d<-read.table("Gene_expression_matrix.txt",header=T,sep="\t")
+dsm<-subset(d, d$h1_P > 10000 & d$h2_P > 10000 & d$h1_T12 > 10000 & d$h2_T12 > 10000) 
+summary(dsm)
+forHeatmap<-dsm[,2:5] #get rid of the gene names
+forHeatmap<-as.matrix(forHeatmap) 
+heatmap(forHeatmap, scale="column", col = terrain.colors(256))
+```
+
+
+

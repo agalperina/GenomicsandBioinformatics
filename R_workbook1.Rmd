@@ -1,0 +1,175 @@
+---
+title: "R_workbook1"
+author: "Anastasia Galperina"
+date: "2/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(knitr)
+```
+
+```{r}
+6 + 2
+```
+
+```{r}
+6 + 2 / 3
+```
+
+```{r}
+(6 + 2) / 3
+```
+
+```{r}
+    log10 (10)       # log10
+    3^3            # 3 raised to the third power
+    abs (1-7)      # Absolute value of 1-7
+```
+
+```{r}
+x = 3.5
+```
+
+```{r}
+x
+```
+
+```{r}
+sqrt(x)
+```
+
+```{r}
+x = 1; y = 2 
+z = x > y 
+z   
+```
+
+```{r}
+x = TRUE; y = FALSE 
+x & y
+``` 
+
+```{r}
+x | y 
+``` 
+
+```{r}
+!x
+``` 
+
+```{r}
+x = "ATGAAA"
+y = "TTTTGA"
+x
+```
+
+```{r}
+# x + y
+# Error in x + y : non-numeric argument to binary operator
+```
+
+```{r}
+x<- c(1,10,100)    
+x
+```
+
+```{r}
+x * 2
+```
+
+```{r}
+sum (x)
+```
+
+```{r}
+x<- c(1,10,100) 
+y<- c(1,2,3) 
+x * y
+```
+
+```{r}
+codons<- c("AUG", "TAT", "UGA") 
+codons
+```
+
+```{r}
+RNA_levels<-c(7, 28, 100, 201, 208, 1000, 3, 835)
+```
+
+```{r}
+barplot(RNA_levels)
+```
+
+```{r}
+barplot(RNA_levels, xlab = "Gene Expression Data", col="blue")
+```
+
+```{r}
+RNA_levels_high<-subset(RNA_levels, RNA_levels >=10)
+barplot(RNA_levels_high, xlab = "Gene Expression Data", col="blue")
+```
+
+```{r}
+RNA_levels_base<- c(7, 28, 100, 201, 208, 435, 3, 358)
+```
+
+```{r}
+RNA_levels_experiment<-c(1200, 2800, 3000, 2010, 2080, 10000, 300, 8350)
+```
+
+```{r}
+t.test(RNA_levels_base, RNA_levels_experiment)
+```
+
+a. Create a vector of the values 10000, 6352, 1099, 4354 and 129. What is the sum of that vector?
+b. Divide each value in the vector by the sum to determine relate frequency.
+c. plot the new relative frequency vector to see normalized expression levels and paste here.
+
+# Exercise 1
+```{r}
+#a
+values <- c(10000, 6352, 1099, 4354, 129)
+sum <- sum(values)
+sum
+
+#b
+freq_values <- values / (sum(values))
+freq_values
+
+#c
+barplot(freq_values, xlab = "Frequency of Values", col="pink")
+```
+
+a. Type that new vector here
+b. Are the two vectors significantly different? What is the p-value? 
+
+# Exercise 2 
+```{r}
+#a
+experimental_vector <- c(45, 798, 444, 10, 0)
+
+#b
+t.test(values, experimental_vector)
+# p-value is 0.08258, since it is below 0.05 which indicates statisticl significance
+```
+
+# Exercise 3
+
+a. Remake the barplot on line 181, but add labels to the x and y axis
+b. Run it again, but now change the colors of the bar plot
+
+```{r}
+#a
+RNA_levels<-c(7, 28, 100, 201, 208, 1000, 3, 835)
+barplot(RNA_levels, xlab = "Gene Expression Data", ylab = "RNA Levels", main="Measurements of 8 Different RNAs from a Tissue", col="blue")
+
+#b
+barplot(RNA_levels, xlab = "Gene Expression Data", ylab = "RNA Levels", main="Measurements of 8 Different RNAs from a Tissue", col="purple")
+```
+
