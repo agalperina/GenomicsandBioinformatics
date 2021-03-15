@@ -1,0 +1,157 @@
+---
+title: "Empirical analysis of gene expression data in R"
+output: html_document
+---
+```{r}
+library(knitr)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Here we have raw counts sequencing data from 2 people, over 2 timepoints in a an experimental challenge (this is a serum challenge like when we get a cut and it heals - that's serum starting the wound healing response).
+
+The results we want to create and analyze are that we want to know what genes are being differentially expressed across the timepoints.
+
+There are a number of packages to do this in R (edgeR, DESeq, DEGSeq, ect... that all have different strengths / weaknesses). Today we will be using EdgeR. We will both 1) normalize and 2) ask which genes are being expressed differently between our treatments. There are also more complex versions of this model, where you can test 2+ treatments, or other factors (time, tissue, stage, ect...)
+
+The assignment today will not be turned in with .Rmd or knitr, but just as a text file with some screen shots for a few of the questions.
+
+Setup:
+Open RStudio
+
+Under “Session”, choose Set Working Directory -> Choose Directory  - the one you downloaded the counts file to  - Desktop might be easiest.
+
+In R, you need to download and import the package EdgeR.
+## try http:// if https:// URLs are not supported
+source("https://bioconductor.org/biocLite.R")
+biocLite("edgeR")
+
+If it asks for updates, just type the letter a or y for yes/no. It may not.
+
+```{r}
+library(edgeR)
+data<-read.table("counts_file.txt",header=T)
+```
+
+Now we need to load the program and the raw data
+
+```{r}
+##now look at it
+head(data)
+```
+
+##Many R programs will only take numerical values (just like with the heatmap). Here we append the gene names as ##“rownames” so that we can keep track of the genes.
+```{r}
+datasm<-data[,2:5]
+rownames(datasm)<-data[,1]
+head(datasm)
+```
+
+
+##Now we set up the experiment into different groups
+```{r}
+group=factor(c(1,2,1,2))
+d<-DGEList(datasm, group=group)
+d
+```
+
+## R organizes lots of layers of information into “objects”. Just like you did with column names, you can just get parts of an object using the "$"
+
+type d to see the levels of the d object you just made
+```{r}
+head(d)
+```
+##? before any command in R will bring up the help page (on the right)
+?DGEList
+
+1. What does that function do? How many genes are we looking at?
+
+Creates an object of class "DGEList" from a table of counts and normalizes it so that we can compare and look for statistically significant changes between gene expression between treatments. Looking at 1439.
+
+##now we are normalizing across the libraries, so that a library ##with more reads does not drive the analysis
+```{r}
+d <- calcNormFactors(d)
+design <- model.matrix(~group)
+design
+d <- estimateDisp(d,design)
+```
+
+## now look again at the elements in d
+2. How many object elements are present?
+
+11 objects are present
+```{r}
+head(d)
+```
+
+## Now, let’s see how our samples are clustering using a PCoA/MDS plot:
+```{r}
+plotMDS(d) 
+```
+
+##Note, this function calls the plot functions, so you can add colors, text, ect here like you've done in the workbooks, use ?plotMDS to see examples
+
+3. What do you see? Add a color and a plot title.
+
+There is a graph with h1_T0, h1_T12, h2_T0 and h2_T12 in separate corners of the graph.
+
+
+```{r}
+plotMDS(d, col = "blue", main = "Gene Expression")
+```
+
+
+
+##To perform quasi-likelihood F-tests to determine differential expression:
+```{r}
+fit <- glmQLFit(d,design)
+qlf <- glmQLFTest(fit,coef=2)
+```
+
+
+##The topTags function will by default spit out a list of the top 10 DE genes. To get them all tell it n=# of genes
+```{r}
+dim(d)
+```
+
+
+
+##from the results of that  (how long is the file) input a number n=### in the following command:
+```{r}
+topTags(qlf)
+tags<-topTags(qlf, n=1431) 
+```
+4. What are 5 of the top 10 DE genes? Using genecard and google find out a little about what they do (google "geneName" and genecard).
+
+IL8 - proteins are proinflammatory and primarily mediate the activation and migration of neutrophils into tissue from peripheral blood
+
+THBD - encodes thrombomodulin, an endothelial cell surface glycoprotein that forms a 1:1 complex with the coagulation factor thrombin
+
+ANGPTL4 - inhibits LPL activity, retarding lipoprotein catabolism
+
+CD274 - encodes an immune inhibitory receptor ligand that is expressed by hematopoietic and non-hematopoietic cells, such as T cells and B cells and various types of tumor cells
+
+IL1RN - nhibits the activities of interleukin 1, alpha (IL1A) and interleukin 1, beta (IL1B), and modulates a variety of interleukin 1 related immune and inflammatory responses
+
+## Make an MA plot:
+```{r}
+plotMD(fit)
+abline(h=c(-1, 1), col="blue")
+```
+
+
+##write out the table of the top tags. This will write into the folder you're in (most likely where you've put the "counts_file.txt" file from the beginning.
+```{r}
+write.table(tags, file="gene_expression_DE.txt",quote=F,sep="\t") 
+```
+
+Citation:
+EdgeR is described in detail in the following papers:
+Robinson MD, McCarthy DJ and Smyth GK (2010). “edgeR: a Bioconductor package for differential expression analysis of digital gene expression data.” Bioinformatics, 26(1), pp. 139-140.
+McCarthy, J. D, Chen, Yunshun, Smyth and K. G (2012). “Differential expression analysis of multifactor RNA-Seq experiments with respect to biological variation.” Nucleic Acids Research, 40(10), pp. 4288-4297.
+
+
+
